@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login using OTP - Automobile Component of Goa Limited</title>
+  <style>
+    body.login-page {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f2f2f2;
+      margin: 0;
+    }
+
+    .login-container {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 40px 30px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .login-container input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .login-container button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .login-container button:hover {
+      background-color: #0056b3;
+    }
+
+    #message {
+      text-align: center;
+      color: red;
+      display: none;
+    }
+  </style>
+</head>
+<body class="login-page">
+  <div class="login-container">
+    <h2>Sign In</h2>
+    
+    <input type="tel" id="phoneNumber" placeholder="Enter your phone number" required>
+    <button type="button" id="sendOtpBtn">Send OTP</button>
+
+    <input type="text" id="otpInput" placeholder="Enter OTP" required disabled>
+    <button type="submit" id="verifyOtpBtn" disabled>Submit</button>
+
+    <p id="message"></p>
+  </div>
+
+  <script>
+    const backendURL = "http://localhost:3000";
+
+    document.getElementById('sendOtpBtn').addEventListener('click', function() {
+      let phone = document.getElementById('phoneNumber').value;
+      if (!phone.match(/^[6-9]\d{9}$/)) {
+        showMessage("Enter a valid phone number!", "red");
+        return;
+      }
+
+      fetch(`${backendURL}/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('otpInput').disabled = false;
+          document.getElementById('verifyOtpBtn').disabled = false;
+          showMessage("OTP Sent!", "green");
+        } else {
+          showMessage("Error sending OTP!", "red");
+        }
+      });
+    });
+
+    document.getElementById('verifyOtpBtn').addEventListener('click', function() {
+      let phone = document.getElementById('phoneNumber').value;
+      let otp = document.getElementById('otpInput').value;
+
+      fetch(`${backendURL}/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, otp })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showMessage("OTP Verified! Redirecting...", "green");
+          setTimeout(() => window.location.href = "home.html", 2000);
+        } else {
+          showMessage("Invalid OTP!", "red");
+        }
+      });
+    });
+
+    function showMessage(msg, color) {
+      let messageEl = document.getElementById('message');
+      messageEl.innerText = msg;
+      messageEl.style.color = color;
+      messageEl.style.display = "block";
+    }
+  </script>
+</body>
+</html>
